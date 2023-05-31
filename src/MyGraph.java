@@ -1,46 +1,36 @@
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Queue;
-import java.util.HashSet;
-import java.util.Comparator;
-
+import java.util.*;
 
 public class MyGraph<Vertex> {
-    private Map<Vertex, List<Vertex>> list;
-
+    private Map<Vertex, List<Edge<Vertex>>> adjacencyMap;
 
     public MyGraph() {
-        list = new HashMap<>();
+        adjacencyMap = new HashMap<>();
     }
 
     public void addVertex(Vertex vertex) {
-        list.put(vertex, new LinkedList<>());
+        adjacencyMap.put(vertex, new LinkedList<>());
     }
 
-    public void addEdge(Vertex source, Vertex destination) {
+    public void addEdge(Vertex source, Vertex destination, int weight) {
         validateVertex(source);
         validateVertex(destination);
-        list.get(source).add(destination);
-        list.get(destination).add(source);
-
+        adjacencyMap.get(source).add(new Edge<>(destination, weight));
+        adjacencyMap.get(destination).add(new Edge<>(source, weight));
     }
 
-    private void validateVertex(Vertex index) {
-        if (!list.containsKey(index)) {
-            throw new IllegalArgumentException("Vertex " + index + " is out of the range");
+    private void validateVertex(Vertex vertex) {
+        if (!adjacencyMap.containsKey(vertex)) {
+            throw new IllegalArgumentException("Vertex " + vertex + " is out of range.");
         }
     }
 
     public void printGraph() {
-        for (Map.Entry<Vertex, List<Vertex>> entry : list.entrySet()) {
+        for (Map.Entry<Vertex, List<Edge<Vertex>>> entry : adjacencyMap.entrySet()) {
             Vertex vertex = entry.getKey();
-            List<Vertex> neighbors = entry.getValue();
+            List<Edge<Vertex>> neighbors = entry.getValue();
             System.out.print("Vertex " + vertex + " is connected to: ");
-            for (Vertex neighbor : neighbors) {
-                System.out.print(neighbor + " ");
+            for (Edge<Vertex> edge : neighbors) {
+                System.out.print(edge.getDestination() + "(" + edge.getWeight() + ") ");
             }
             System.out.println();
         }
@@ -49,74 +39,94 @@ public class MyGraph<Vertex> {
     public void removeEdge(Vertex source, Vertex destination) {
         validateVertex(source);
         validateVertex(destination);
-        List<Vertex> neighbors = list.get(source);
-        if (neighbors!=null) {
-            neighbors.remove(destination);
+        List<Edge<Vertex>> sourceNeighbors = adjacencyMap.get(source);
+        if (sourceNeighbors != null) {
+            sourceNeighbors.removeIf(edge -> edge.getDestination().equals(destination));
         }
-        list.get(destination).remove(source);
+        List<Edge<Vertex>> destinationNeighbors = adjacencyMap.get(destination);
+        if (destinationNeighbors != null) {
+            destinationNeighbors.removeIf(edge -> edge.getDestination().equals(source));
+        }
     }
 
     public boolean hasEdge(Vertex source, Vertex destination) {
         validateVertex(source);
         validateVertex(destination);
-        List<Vertex> neighbors = list.get(source);
-        return neighbors != null && neighbors.contains(destination);
+        List<Edge<Vertex>> sourceNeighbors = adjacencyMap.get(source);
+        if (sourceNeighbors == null) {
+            return false;
+        }
+        for (Edge<Vertex> edge : sourceNeighbors) {
+            if (edge.getDestination().equals(destination)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Vertex> getNeighbors(Vertex vertex) {
         validateVertex(vertex);
-        return list.getOrDefault(vertex, new LinkedList<>());
+        List<Vertex> neighbors = new ArrayList<>();
+        List<Edge<Vertex>> edges = adjacencyMap.getOrDefault(vertex, new LinkedList<>());
+        for (Edge<Vertex> edge : edges) {
+            neighbors.add(edge.getDestination());
+        }
+        return neighbors;
     }
 
-    public void BFS(Vertex start) {
+    public void dijkstraSearch(Vertex start) {
         validateVertex(start);
-        Map<Vertex, Boolean> visited = new HashMap<>(); //creating list to cheking that we already visited it
-        for (Vertex vertex : list.keySet()) {
-            visited.put(vertex, false);//puting to this boolean list false
-        }
+        Map<Vertex, Integer> distance = new HashMap<>();
+        Map<Vertex, Vertex> previous = new HashMap<>();
 
-        Queue<Vertex> queue = new LinkedList<>();
-        queue.add(start);//use the queue to BFS
-        visited.put(start, true);
+        PriorityQueue<Vertex> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(distance::get));
+        distance.put(start, 0);
+        previous.put(start, null);
+        priorityQueue.add(start);
 
-        while (!queue.isEmpty()) {
-            Vertex vertex = queue.poll();
-            System.out.print(vertex + " ");
-
-            List<Vertex> neighbors = list.get(vertex);
-            for (Vertex neighbor : neighbors) {
-                if (!visited.get(neighbor)) {
-                    queue.add(neighbor);
-                    visited.put(neighbor, true);
-                }
+        for (Vertex vertex : adjacencyMap.keySet()) {
+            if (!vertex.equals(start)) {
+                distance.put(vertex, Integer.MAX_VALUE);
+                previous.put(vertex, null);
             }
         }
-    }
-    public void DijkstraSearch(Vertex start) {
-        validateVertex(start);
-        Map<Vertex, Integer> distances = new HashMap<>(); //creating list to cheking that we already visited it
-        for (Vertex vertex : list.keySet()) {
-            distances.put(vertex, Integer.MAX_VALUE);//puting to this boolean list false
-        }
-        distances.put(start, 0);
 
-        Set<Vertex> unvisited = new HashSet<>(list.keySet());
-        unvisited.remove(start);
+        while (!priorityQueue.isEmpty()) {
+            Vertex current = priorityQueue.poll();
+            List<Edge<Vertex>> neighbors = adjacencyMap.get(current);
 
-        while (!unvisited.isEmpty()) {
-            Vertex current = unvisited.stream().min(Comparator.comparingInt(distances::get)).get();
-            unvisited.remove(current);
-
-            for (Vertex neighbor : list.get(current)) {
-                int newDistance = distances.get(current) + 1;
-                if (newDistance < distances.get(neighbor)) {
-                    distances.put(neighbor, newDistance);
+            for (Edge<Vertex> neighbor : neighbors) {
+                int newDistance = distance.get(current) + neighbor.getWeight();
+                if (newDistance < distance.get(neighbor.getDestination())) {
+                    distance.put(neighbor.getDestination(), newDistance);
+                    previous.put(neighbor.getDestination(), current);
+                    priorityQueue.remove(neighbor.getDestination());
+                    priorityQueue.add(neighbor.getDestination());
                 }
             }
         }
 
-        for (Map.Entry<Vertex, Integer> entry : distances.entrySet()) {
-            System.out.println("The distance from " + start + " to " + entry.getKey() + " is " + entry.getValue());
+        System.out.println("Shortest paths from start vertex " + start + ":");
+        for (Vertex vertex : distance.keySet()) {
+            System.out.println("Vertex: " + vertex + ", Distance: " + distance.get(vertex) + ", Previous: " + previous.get(vertex));
+        }
+    }
+
+    private static class Edge<Vertex> {
+        private Vertex destination;
+        private int weight;
+
+        public Edge(Vertex destination, int weight) {
+            this.destination = destination;
+            this.weight = weight;
+        }
+
+        public Vertex getDestination() {
+            return destination;
+        }
+
+        public int getWeight() {
+            return weight;
         }
     }
 }
