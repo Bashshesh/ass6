@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class WeightedGraph<V extends Comparable<V>> {
+    //the same with default graph, but just with weights
     private Map<Vertex<V>, List<Vertex<V>>> map;
 
     public WeightedGraph() {
