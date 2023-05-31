@@ -24,6 +24,6 @@ public class Main {
         System.out.println(temp.hasEdge(1,2)); //chekking that we have the edge 1-2(true)
         System.out.println(temp.getNeighbors(1)); //get all Neighbors from vertex 1
         //temp.BFS(1);
-        temp.DijkstraSearch(1);
+        temp.dijkstraSearch(1);
     }
 }
