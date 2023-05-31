@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class MyGraph<Vertex> {
     private Map<Vertex, List<Vertex>> list;
@@ -63,23 +64,27 @@ public class MyGraph<Vertex> {
         return list.getOrDefault(vertex, new LinkedList<>());
     }
 
-    public void DFS(Vertex start) {
+    public void BFS(Vertex start) {
         validateVertex(start);
         Map<Vertex, Boolean> visited = new HashMap<>();
-        for (Vertex vertex:list.keySet()) {
-            visited.put(vertex,false);
+        for (Vertex vertex : list.keySet()) {
+            visited.put(vertex, false);
         }
-        DFSHelper(start, visited);
 
-    }
+        Queue<Vertex> queue = new LinkedList<>();
+        queue.add(start);
+        visited.put(start, true);
 
+        while (!queue.isEmpty()) {
+            Vertex vertex = queue.poll();
+            System.out.print(vertex + " ");
 
-    private void DFSHelper(Vertex vertex, Map<Vertex, Boolean> visited) {
-        visited.put(vertex, true);
-        System.out.print(vertex + " ");
-        for (Vertex neighbor : list.get(vertex)) {
-            if (!visited.get(neighbor)) {
-                DFSHelper(neighbor, visited);
+            List<Vertex> neighbors = list.get(vertex);
+            for (Vertex neighbor : neighbors) {
+                if (!visited.get(neighbor)) {
+                    queue.add(neighbor);
+                    visited.put(neighbor, true);
+                }
             }
         }
     }

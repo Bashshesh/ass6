@@ -18,10 +18,11 @@ public class Main {
         temp.removeEdge(2,3);
         temp.printGraph();
         //print it after we remove edge 2-3
-        System.out.println(temp.hasEdge(2,3));
+        System.out.println(temp.hasEdge(2,3)); //will be false, because 18 line of code
+
         System.out.println(temp.hasEdge(1,3)); //cheking that we have the edge 1-3(true)
         System.out.println(temp.hasEdge(1,2)); //chekking that we have the edge 1-2(true)
-        System.out.println(temp.getNeighbors(1));
+        System.out.println(temp.getNeighbors(1)); //get all Neighbors from vertex 1
         temp.DFS(1);
     }
 }
