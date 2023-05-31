@@ -66,13 +66,13 @@ public class MyGraph<Vertex> {
 
     public void BFS(Vertex start) {
         validateVertex(start);
-        Map<Vertex, Boolean> visited = new HashMap<>();
+        Map<Vertex, Boolean> visited = new HashMap<>(); //creating list to cheking that we already visited it
         for (Vertex vertex : list.keySet()) {
-            visited.put(vertex, false);
+            visited.put(vertex, false);//puting to this boolean list false
         }
 
         Queue<Vertex> queue = new LinkedList<>();
-        queue.add(start);
+        queue.add(start);//use the queue to BFS
         visited.put(start, true);
 
         while (!queue.isEmpty()) {
@@ -86,6 +86,33 @@ public class MyGraph<Vertex> {
                     visited.put(neighbor, true);
                 }
             }
+        }
+    }
+    public void DijkstraSearch(Vertex start) {
+        validateVertex(start);
+        Map<Vertex, Integer> distances = new HashMap<>(); //creating list to cheking that we already visited it
+        for (Vertex vertex : list.keySet()) {
+            distances.put(vertex, Integer.MAX_VALUE);//puting to this boolean list false
+        }
+        distances.put(start, 0);
+
+        Set<Vertex> unvisited = new HashSet<>(list.keySet());
+        unvisited.remove(start);
+
+        while (!unvisited.isEmpty()) {
+            Vertex current = unvisited.stream().min(Comparator.comparingInt(distances::get)).get();
+            unvisited.remove(current);
+
+            for (Vertex neighbor : list.get(current)) {
+                int newDistance = distances.get(current) + 1;
+                if (newDistance < distances.get(neighbor)) {
+                    distances.put(neighbor, newDistance);
+                }
+            }
+        }
+
+        for (Map.Entry<Vertex, Integer> entry : distances.entrySet()) {
+            System.out.println("The distance from " + start + " to " + entry.getKey() + " is " + entry.getValue());
         }
     }
 }
