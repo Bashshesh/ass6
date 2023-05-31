@@ -82,14 +82,15 @@ public class MyGraph<Vertex> {
         while (!queue.isEmpty()) {
             Vertex vertex = queue.poll();
             System.out.print(vertex + " ");
-
             List<Vertex> neighbors = list.get(vertex);
             for (Vertex neighbor : neighbors) {
                 if (!visited.get(neighbor)) {
-                    queue.add(neighbor);
-                    visited.put(neighbor, true);
+                    queue.add(neighbor);//adding the neighbors
+                    visited.put(neighbor, true);//true if we visited it
                 }
             }
         }
     }
+
+
 }
